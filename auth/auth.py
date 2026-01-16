@@ -1,7 +1,8 @@
 from passlib.context import CryptContext
 class Authentication:
-    def __init__(self, connector):
-        self.database_connector = connector
+    def __init__(self, mdb_connector, redis_connector):
+        self.database_connector = mdb_connector
+        self.redis_connector = redis_connector
         self.pwd_context = CryptContext(
                     schemes=["bcrypt"],
                     deprecated="auto"
@@ -19,3 +20,16 @@ class Authentication:
     def sign_up(self, username, password, email):
         status = self._create_user(username, password, email)
         return status
+
+    def login(self, username, password):
+        #create session
+        
+        user_data = self.database_connector.find_user(username)
+        if not user_data:
+            return {"status": False}
+        if(user_data["username"]== username and self.pwd_context.verify(password, user_data["password"])):
+            session_id = self.redis_connector.create_session(username)
+            return {"status": True, "session_id": session_id}
+        else:
+            return {"status": False}
+

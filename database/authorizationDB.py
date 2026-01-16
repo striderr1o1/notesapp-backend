@@ -34,3 +34,9 @@ class mongo_db_auth_connector:
             return {
                 "Exception" : e
             }
+    
+    def find_user(self, username):
+        user_data = self.collection.find_one({"username": username})
+        return user_data
+
+
