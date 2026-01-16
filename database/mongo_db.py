@@ -1,8 +1,8 @@
 from pymongo.server_api import ServerApi
 from pymongo.mongo_client import MongoClient
-
+import os
 class mongo_db_connector:
-    def __init__():
+    def __init__(self):
         self.username = os.environ.get("MONGO_USERNAME")
         self.password = os.environ.get("MONGO_PASSWORD")
         self.uri = f"mongodb+srv://{self.username}:{self.password}@cluster0.tiufhor.mongodb.net/?appName=Cluster0"
@@ -14,5 +14,8 @@ class mongo_db_connector:
         self.client = MongoClient(uri, server_api=ServerApi('1'))
         self.database = self.client["notes-app"]
         
+        return
+    
+    def create_collection(self):
         return
     
