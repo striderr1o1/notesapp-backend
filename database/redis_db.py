@@ -11,7 +11,7 @@ class redis_connector:
     def create_session(self, username):
         session_id = str(uuid.uuid4())
         session_timelimit = timedelta(days=7)
-        key = f"session:{session_id}"
+        key = session_id
 
         self.rclient.setex(
             key,
@@ -20,3 +20,8 @@ class redis_connector:
         )
 
         return session_id
+
+    def get_user_from_id(self, sessionid):
+        user_id = self.rclient.get(sessionid)
+        print(user_id)
+        return user_id

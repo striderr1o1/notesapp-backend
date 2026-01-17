@@ -1,4 +1,5 @@
 from passlib.context import CryptContext
+from fastapi import Request, HTTPException
 class Authentication:
     def __init__(self, mdb_connector, redis_connector):
         self.database_connector = mdb_connector
@@ -32,4 +33,22 @@ class Authentication:
             return {"status": True, "session_id": session_id}
         else:
             return {"status": False}
+
+    def validate_session(request: Request):
+        session_id = request.cookie.get("session_id")
+        if not session_id:
+            raise HTTPException(status_code = 401, detail = "Not authenticated")
+        username_from_session = self.redis_connector.get_user_from_id(session_id)
+        if not username_from_session:
+            raise HTTPException(status_code = 401, detail = "Not authenticated")
+        
+        userdata = self.database_connector.find_user(username_from_session)
+        if not userdata:
+            raise HTTPException(status_code=401, detail = "No such user found")
+
+        return userdata
+    
+
+
+
 
