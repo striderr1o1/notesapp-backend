@@ -25,3 +25,8 @@ class redis_connector:
         user_id = self.rclient.get(sessionid)
         print(user_id)
         return user_id
+   
+    def delete_session(self, sessionid):
+        if(self.rclient.delete(sessionid)):
+            return True
+        return False

@@ -34,19 +34,29 @@ class Authentication:
         else:
             return {"status": False}
 
-    def validate_session(request: Request):
-        session_id = request.cookie.get("session_id")
+    def validate_session(self, request: Request):
+        session_id = request.cookies.get("session_id")
+        print(request)
         if not session_id:
-            raise HTTPException(status_code = 401, detail = "Not authenticated")
+            raise HTTPException(status_code = 401, detail = "Not authenticated, no session id included")
         username_from_session = self.redis_connector.get_user_from_id(session_id)
         if not username_from_session:
-            raise HTTPException(status_code = 401, detail = "Not authenticated")
+            raise HTTPException(status_code = 401, detail = "Not authenticated, user not found in sessions db")
         
         userdata = self.database_connector.find_user(username_from_session)
         if not userdata:
             raise HTTPException(status_code=401, detail = "No such user found")
 
         return userdata
+
+    def logout(self, request: Request):
+        session_id = request.cookies.get("session_id")
+        if not session_id:
+            raise HTTPException(status_code = 401, detail = "Not authenticated, no session id included")
+        status = self.redis_connector.delete_session(session_id)
+        if status == True:
+            return {"status": True}
+        return {"status": False }
     
 
 

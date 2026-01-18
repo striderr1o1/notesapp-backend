@@ -37,4 +37,8 @@ async def Login(username: str, password: str, response: Response):
     )
     return {"status": "successful"}
 
-
+@router.get("/logout")
+async def Logout(status=Depends(auth_obj.logout)):
+    if(status["status"] == True):
+        return status 
+    raise HTTPException(status_code=401, detail=f"Failed To logout.")

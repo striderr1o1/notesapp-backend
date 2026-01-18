@@ -11,11 +11,12 @@ auth_dbconnector = mongo_db_auth_connector()
 redis_dbconnector = redis_connector()
 auth_obj = Authentication(auth_dbconnector, redis_dbconnector)
 
-@router.get("/getnotes")
-async def get_notes(user=Depends(auth_obj.validate_session)):
+@router.post("/sendmessage")
+async def get_notes( message: str, user=Depends(auth_obj.validate_session)):
     
     return {"username": user["username"],
             "email": user["email"],
-            "note": "Jeeeto pakistan"}
+            "note": message}
+    
 
 
