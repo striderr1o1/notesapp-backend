@@ -24,6 +24,11 @@ class mongo_db_auth_connector:
             "password": password,
             "email": email
         }
+        searching_user = self.find_user(username)
+        if searching_user:
+            return {
+                    "Exception" : "user exists" 
+            }
         try: 
             self.collection.insert_one(user)
             return {
@@ -39,4 +44,19 @@ class mongo_db_auth_connector:
         user_data = self.collection.find_one({"username": username})
         return user_data
 
+    def enter_id_in_userdata(self,username, ID):
+        userdata = self.find_user(username)
+        if not userdata:
+            return False
+
+        self.collection.update_one({
+          "username": username
+            },
+            {
+            "$addToSet": {
+               "notebook_ids": ID
+                }
+            }
+            )
+        return True 
 

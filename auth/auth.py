@@ -20,6 +20,9 @@ class Authentication:
     
     def sign_up(self, username, password, email):
         status = self._create_user(username, password, email)
+        if status == False:
+            raise HTTPException(status_code = 401, detail = "User exists")
+
         return status
 
     def login(self, username, password):
@@ -58,7 +61,10 @@ class Authentication:
             return {"status": True}
         return {"status": False }
     
+    def enterID_in_userdata(self,username,ID):
+        status = self.database_connector.enter_id_in_userdata(username, ID)
 
+        return status
 
 
 
