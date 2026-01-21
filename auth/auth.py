@@ -60,11 +60,14 @@ class Authentication:
         if status == True:
             return {"status": True}
         return {"status": False }
-    
+   
+   #for entering notebook ids
     def enterID_in_userdata(self,username,ID):
         status = self.database_connector.enter_id_in_userdata(username, ID)
 
         return status
 
-
+    def get_user_data(self, username):
+        userdata = self.database_connector.find_user(username)
+        return userdata
 

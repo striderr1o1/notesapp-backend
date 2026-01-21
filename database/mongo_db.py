@@ -1,3 +1,4 @@
+from bson.objectid import ObjectId
 from pymongo.server_api import ServerApi
 from pymongo.mongo_client import MongoClient
 import os
@@ -34,4 +35,13 @@ class mongo_db_connector:
         notebookid = result.inserted_id 
         return notebookid 
 
-       
+    def get_notebook_data(self, nbID):
+        self.notebooks_coll = self.database["notebooks"]
+        objectid = ObjectId(nbID)
+        nbData = self.notebooks_coll.find_one({"_id":objectid })
+        if not nbData:
+            return None 
+        nbData["_id"] = str(nbData["_id"])
+        return nbData
+
+

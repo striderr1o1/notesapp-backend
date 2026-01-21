@@ -23,8 +23,21 @@ mongo_db_conn = mongo_db_connector()
 async def get_notebooks(user=Depends(auth_obj.validate_session)):
     #process 
     username = user["username"]
-    #if username not exist, create collection
-    return {"status": "ok"}
+    #get notebook names from user data
+    userdata = auth_obj.get_user_data(username)
+    if not userdata["notebook_ids"]:
+        raise HTTPException(status=404, detail="Not found")
+    notebooksIDlist= userdata["notebook_ids"]
+    notebooks_list = [] 
+    for nbID in notebooksIDlist:
+        nbdata = mongo_db_conn.get_notebook_data(str(nbID))
+        if nbdata == None:
+            print("NONE")
+        notebooks_list.append(nbdata)
+    print(notebooks_list)
+    return notebooks_list
+
+
 
 @router.post("/createnotebook")
 async def create_Notebook(notebookname: str, user=Depends(auth_obj.validate_session)):
@@ -36,3 +49,6 @@ async def create_Notebook(notebookname: str, user=Depends(auth_obj.validate_sess
     return JSONResponse(content={"notebookid": str(notebook_id),
                                  "message": "notebook created successfully"
         }, status_code =201) 
+
+# how to get notes:
+# user clicks on notebook, notebook id comes, fetch all note ids of that notebook, then fetch each note and send it back. note should contain the notebook ids and username, similarly, notebooks should contain note ids
