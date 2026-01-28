@@ -36,7 +36,7 @@ class mongo_db_connector:
         #return id to async endpoint function
         #store id in user auth data
         notebookid = result.inserted_id 
-        return notebookid 
+        return str(notebookid)
   
     def get_notebook(self, nbID):
         self.notebooks_coll = self.database["notebooks"]
@@ -63,12 +63,14 @@ class mongo_db_connector:
         if not note_id:
             raise HTTPException(status = 400, detail="failed to create note")
             return False
-        self.store_noteid_in_notebook(note_id, notebook_id)
+        storing_status = self.store_noteid_in_notebook(str(note_id), notebook_id)
+        if not storing_status:
+            return False
         return True
 
     def store_noteid_in_notebook(self, note_id, notebook_id):
         self.notebooks_coll = self.database["notebooks"]
-        self.notebooks_coll.update_one({
+        updated_object = self.notebooks_coll.update_one({
             "_id": ObjectId(notebook_id)
             },
              {
@@ -77,6 +79,8 @@ class mongo_db_connector:
                     }
                  }
             )
+        if not updated_object:
+            return False
         return True
 
     #working but need to add some error handling plus next
