@@ -54,8 +54,10 @@ class Authentication:
 
     def logout(self, request: Request):
         session_id = request.cookies.get("session_id")
+        print(session_id)
         if not session_id:
             raise HTTPException(status_code = 401, detail = "Not authenticated, no session id included")
+        print(session_id)
         status = self.redis_connector.delete_session(session_id)
         if status == True:
             return {"status": True}

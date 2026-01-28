@@ -1,6 +1,8 @@
 from bson.objectid import ObjectId
 from pymongo.server_api import ServerApi
 from pymongo.mongo_client import MongoClient
+from bson.objectid import ObjectId
+from fastapi import HTTPException
 import os
 from datetime import datetime
 class mongo_db_connector:
@@ -25,7 +27,8 @@ class mongo_db_connector:
         result = self.notebooks_coll.insert_one({
          "username": username,
          "notebook_name": notebookname,
-         "created_at": datetime.utcnow() 
+         "created_at": datetime.utcnow(), 
+         "notes": []
 
             })
         #create notebook
@@ -34,14 +37,47 @@ class mongo_db_connector:
         #store id in user auth data
         notebookid = result.inserted_id 
         return notebookid 
-
-    def get_notebook_data(self, nbID):
+  
+    def get_notebook(self, nbID):
         self.notebooks_coll = self.database["notebooks"]
         objectid = ObjectId(nbID)
         nbData = self.notebooks_coll.find_one({"_id":objectid })
+        return nbData
+
+    def get_notebook_data(self, nbID):
+        nbData = self.get_notebook(nbID)
         if not nbData:
             return None 
         nbData["_id"] = str(nbData["_id"])
         return nbData
 
+    def create_note(self, note_name, data, username, notebook_id):
+        self.notes_coll = self.database["notes"]
+        result = self.notes_coll.insert_one({
+        "notename": note_name,
+        "username": username,
+        "notebook_id": notebook_id,
+        "data": data
+           })
+        note_id = result.inserted_id
+        if not note_id:
+            raise HTTPException(status = 400, detail="failed to create note")
+            return False
+        self.store_noteid_in_notebook(note_id, notebook_id)
+        return True
 
+    def store_noteid_in_notebook(self, note_id, notebook_id):
+        self.notebooks_coll = self.database["notebooks"]
+        self.notebooks_coll.update_one({
+            "_id": ObjectId(notebook_id)
+            },
+             {
+                "$addToSet":{
+                     "notes": note_id
+                    }
+                 }
+            )
+        return True
+
+    #working but need to add some error handling plus next
+    # i need to create get nodes and update notes

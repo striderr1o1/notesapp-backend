@@ -5,20 +5,21 @@ from database.authorizationDB import mongo_db_auth_connector
 from database.redis_db import redis_connector
 from database.mongo_db import mongo_db_connector
 from fastapi.responses import JSONResponse
-
+from pydantic import BaseModel
 router = APIRouter()
 
 auth_dbconnector = mongo_db_auth_connector()
 redis_dbconnector = redis_connector()
 auth_obj = Authentication(auth_dbconnector, redis_dbconnector)
 mongo_db_conn = mongo_db_connector()
-#@router.post("/sendmessage")
-#async def get_notes( message: str, user=Depends(auth_obj.validate_session)):
-#    
-#    return {"username": user["username"],
-#            "email": user["email"],
-#            "note": message}
-    
+
+class Notebook(BaseModel):
+    notebookname: str
+class Note(BaseModel):
+    notebook_id: str
+    notename: str
+    data: str
+  
 @router.get("/getnotebooks")
 async def get_notebooks(user=Depends(auth_obj.validate_session)):
     #process 
@@ -33,15 +34,15 @@ async def get_notebooks(user=Depends(auth_obj.validate_session)):
         nbdata = mongo_db_conn.get_notebook_data(str(nbID))
         if nbdata == None:
             print("NONE")
+            
         notebooks_list.append(nbdata)
     print(notebooks_list)
-    return notebooks_list
-
-
+    return {"notebooks_list": notebooks_list,
+            "username": username} 
 
 @router.post("/createnotebook")
-async def create_Notebook(notebookname: str, user=Depends(auth_obj.validate_session)):
-    notebook_id =  mongo_db_conn.create_notebook(user["username"], notebookname)
+async def create_Notebook(notebookdata: Notebook, user=Depends(auth_obj.validate_session)):
+    notebook_id =  mongo_db_conn.create_notebook(user["username"],notebookdata.notebookname)
   #insert id in userdata
     enter_id_status = auth_obj.enterID_in_userdata(user["username"],notebook_id)
     if enter_id_status == False:
@@ -50,5 +51,13 @@ async def create_Notebook(notebookname: str, user=Depends(auth_obj.validate_sess
                                  "message": "notebook created successfully"
         }, status_code =201) 
 
-# how to get notes:
-# user clicks on notebook, notebook id comes, fetch all note ids of that notebook, then fetch each note and send it back. note should contain the notebook ids and username, similarly, notebooks should contain note ids
+
+@router.post("/createnote")
+async def create_note( notedata: Note, user=Depends(auth_obj.validate_session)):
+    status =  mongo_db_conn.create_note(notedata.notename, notedata.data, user["username"], notedata.notebook_id)        
+    if status == False:
+       raise HTTPException(status=400, detail="Failed")
+    return True
+#receive notebook id
+#create note, store note id in notebook's data
+#store note data i.e note name, note id, data and notebook id in notes collection in mongo db
