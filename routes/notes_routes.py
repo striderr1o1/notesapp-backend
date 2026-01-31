@@ -15,11 +15,14 @@ mongo_db_conn = mongo_db_connector()
 
 class Notebook(BaseModel):
     notebookname: str
+
 class Note(BaseModel):
     notebook_id: str
     notename: str
     data: str
-  
+class NotebookData(BaseModel):
+    notebook_id: str
+
 @router.get("/getnotebooks")
 async def get_notebooks(user=Depends(auth_obj.validate_session)):
     #process 
@@ -58,6 +61,24 @@ async def create_note( notedata: Note, user=Depends(auth_obj.validate_session)):
     if status == False:
        raise HTTPException(status=400, detail="Failed")
     return True
+
+@router.post("/getnotes")
+async def get_notes(notebook_data: NotebookData, user=Depends(auth_obj.validate_session)):
+    notebook_data = mongo_db_conn.get_notebook_data(notebook_data.notebook_id)
+    print(notebook_data)
+    if not notebook_data:
+        raise HTTPException(status_code=404, detail="failed to fetch notes")
+
+    return notebook_data["notes"]
+
+
 #receive notebook id
 #create note, store note id in notebook's data
 #store note data i.e note name, note id, data and notebook id in notes collection in mongo db
+class NoteDataFromUser(BaseModel):
+    note_id: str
+@router.post("/getnotefromid")
+async def get_note_frm_id(NoteData: NoteDataFromUser, user=Depends(auth_obj.validate_session) ):
+   note =  mongo_db_conn.get_note_from_id(NoteData.note_id)
+   note["_id"] = str(note["_id"])
+   return note 

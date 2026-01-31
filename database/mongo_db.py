@@ -85,3 +85,14 @@ class mongo_db_connector:
 
     #working but need to add some error handling plus next
     # i need to create get nodes and update notes
+
+    def get_note_from_id(self, noteid):
+        self.notes_coll = self.database["notes"]
+        objectid = ObjectId(noteid)
+        note  = self.notes_coll.find_one({"_id":objectid })
+        if not note:
+            raise HTTPException(status = 400, detail="failed to create note")
+        note["_id"] = str(note["_id"])
+        return note
+
+    #returning note but next need to integrate it with frontend
