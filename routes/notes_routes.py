@@ -5,7 +5,7 @@ from database.authorizationDB import mongo_db_auth_connector
 from database.redis_db import redis_connector
 from database.mongo_db import mongo_db_connector
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 router = APIRouter()
 
 auth_dbconnector = mongo_db_auth_connector()
@@ -80,5 +80,13 @@ class NoteDataFromUser(BaseModel):
 @router.post("/getnotefromid")
 async def get_note_frm_id(NoteData: NoteDataFromUser, user=Depends(auth_obj.validate_session) ):
    note =  mongo_db_conn.get_note_from_id(NoteData.note_id)
-   note["_id"] = str(note["_id"])
    return note 
+
+class Note_object(BaseModel):
+    note_contents: dict
+    note_id: str
+
+@router.put("/replacenote")
+async def Replace_Note(nt_obj: Note_object, user=Depends(auth_obj.validate_session)):
+    status = mongo_db_conn.replace_note_by_id(nt_obj.note_id, nt_obj.note_contents)
+    return status

@@ -96,3 +96,13 @@ class mongo_db_connector:
         return note
 
     #returning note but next need to integrate it with frontend
+
+    def replace_note_by_id(self, noteid, note_contents):
+        self.notes_coll = self.database["notes"]
+        objectid = ObjectId(noteid)
+        query = {"_id": objectid}
+        update = { "$set" : { "data": note_contents}}
+        note  = self.notes_coll.update_one(query, update)
+        if not note:
+            raise HTTPException(status = 400, detail="failed to update note")
+        return True
