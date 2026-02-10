@@ -1,4 +1,3 @@
-from bson.objectid import ObjectId
 from pymongo.server_api import ServerApi
 from pymongo.mongo_client import MongoClient
 from bson.objectid import ObjectId
@@ -19,11 +18,12 @@ class mongo_db_connector:
     def _connect(self):
         self.client = MongoClient(self.uri, server_api=ServerApi('1'))
         self.database = self.client["app-data"]
+        self.notebooks_coll = self.database["notebooks"]
+        self.notes_coll = self.database["notes"]
         
         return
     
     def create_notebook(self, username, notebookname):
-        self.notebooks_coll = self.database["notebooks"]
         result = self.notebooks_coll.insert_one({
          "username": username,
          "notebook_name": notebookname,
@@ -39,7 +39,6 @@ class mongo_db_connector:
         return str(notebookid)
   
     def get_notebook(self, nbID):
-        self.notebooks_coll = self.database["notebooks"]
         objectid = ObjectId(nbID)
         nbData = self.notebooks_coll.find_one({"_id":objectid })
         return nbData
@@ -52,7 +51,6 @@ class mongo_db_connector:
         return nbData
 
     def create_note(self, note_name, data, username, notebook_id):
-        self.notes_coll = self.database["notes"]
         result = self.notes_coll.insert_one({
         "notename": note_name,
         "username": username,
@@ -69,7 +67,6 @@ class mongo_db_connector:
         return True
 
     def store_noteid_in_notebook(self, note_id, notebook_id):
-        self.notebooks_coll = self.database["notebooks"]
         updated_object = self.notebooks_coll.update_one({
             "_id": ObjectId(notebook_id)
             },
@@ -87,7 +84,6 @@ class mongo_db_connector:
     # i need to create get nodes and update notes
 
     def get_note_from_id(self, noteid):
-        self.notes_coll = self.database["notes"]
         objectid = ObjectId(noteid)
         note  = self.notes_coll.find_one({"_id":objectid })
         if not note:
@@ -98,7 +94,6 @@ class mongo_db_connector:
     #returning note but next need to integrate it with frontend
 
     def replace_note_by_id(self, noteid, note_contents):
-        self.notes_coll = self.database["notes"]
         objectid = ObjectId(noteid)
         query = {"_id": objectid}
         update = { "$set" : { "data": note_contents}}
@@ -106,3 +101,34 @@ class mongo_db_connector:
         if not note:
             raise HTTPException(status = 400, detail="failed to update note")
         return True
+
+    def delete_note(self, noteid, notebook_id):
+        #delete note from notes collection, return notebook id 
+        #and delete it from that notebook as well
+        resp = self._delete_note_in_collection(noteid)
+        resp2 = self._delete_note_in_notebook(noteid, notebook_id)
+        return resp2
+
+    def _delete_note_in_collection(self, noteid):
+        objectid = ObjectId(noteid)
+        query = {"_id": objectid}
+        resp  = self.notes_coll.delete_one(query)       
+        print(resp)
+        return resp 
+
+    def _delete_note_in_notebook(self, noteid, notebookid):
+        notebook = self.get_notebook(notebookid)
+        if not notebook:
+            raise HTTPException(status = 400, detail="failed, no notebook with such name exists ")
+        notes = notebook.get("notes", [])
+        if noteid in notes:
+            # if nid != noteid extract it to new list
+            notes = [nid for nid in notes if nid != noteid]
+        updated_object = self.notebooks_coll.update_one(
+            {"_id": ObjectId(notebookid)},
+            {"$set": {"notes": notes}}
+        )
+        if not updated_object:
+            raise HTTPException(status = 400, detail="failed to update note ")
+        return True
+

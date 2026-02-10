@@ -29,10 +29,14 @@ async def get_notebooks(user=Depends(auth_obj.validate_session)):
     username = user["username"]
     #get notebook names from user data
     userdata = auth_obj.get_user_data(username)
-    if not userdata["notebook_ids"]:
-        raise HTTPException(status=404, detail="Not found")
-    notebooksIDlist= userdata["notebook_ids"]
+    print(userdata)
     notebooks_list = [] 
+    if not "notebook_ids" in userdata:
+       # raise HTTPException(status=404, detail="Not found")
+        return {"notebooks_list": notebooks_list,
+            "username": username} 
+
+    notebooksIDlist= userdata["notebook_ids"]
     for nbID in notebooksIDlist:
         nbdata = mongo_db_conn.get_notebook_data(str(nbID))
         if nbdata == None:
@@ -90,3 +94,12 @@ class Note_object(BaseModel):
 async def Replace_Note(nt_obj: Note_object, user=Depends(auth_obj.validate_session)):
     status = mongo_db_conn.replace_note_by_id(nt_obj.note_id, nt_obj.note_contents)
     return status
+
+class NoteID(BaseModel):
+    note_id: str
+    notebook_id: str
+
+@router.post("/deletenote")
+async def Delete_note(note_id_object: NoteID, user=Depends(auth_obj.validate_session)):
+    resp = mongo_db_conn.delete_note(note_id_object.note_id, note_id_object.notebook_id)
+    return resp
