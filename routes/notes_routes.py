@@ -103,3 +103,7 @@ class NoteID(BaseModel):
 async def Delete_note(note_id_object: NoteID, user=Depends(auth_obj.validate_session)):
     resp = mongo_db_conn.delete_note(note_id_object.note_id, note_id_object.notebook_id)
     return resp
+
+@router.post("/deletenotebook")
+async def Delete_notebook(Notebook_data: NotebookData, user=Depends(auth_obj.validate_session)):
+    return

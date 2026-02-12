@@ -132,3 +132,22 @@ class mongo_db_connector:
             raise HTTPException(status = 400, detail="failed to update note ")
         return True
 
+    def delete_notebook_and_notes(self, notebook_id):
+        #delete notes that are in notebook
+        #delete notebook
+        #delete notebook from user data
+        notebook_data = self.get_notebook_data(notebook_id)
+        note_ids = notebook_data["_id"]
+        for Id in note_ids:
+           # note_object_id = ObjectId(id)
+            resp = self.delete_note(Id, notebook_id) 
+            print(resp)
+        self._delete_notebook(notebook_id) 
+        return
+
+    def _delete_notebook(self, notebookID):
+        query = {"_id": ObjectId(notebookID)}
+        resp = self.notebooks_coll.delete_one(query)
+         
+        return resp
+
