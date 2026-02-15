@@ -137,15 +137,17 @@ class mongo_db_connector:
         #delete notebook
         #delete notebook from user data
         notebook_data = self.get_notebook_data(notebook_id)
-        note_ids = notebook_data["_id"]
+        note_ids = notebook_data["notes"]
+        print(note_ids)
         for Id in note_ids:
            # note_object_id = ObjectId(id)
             resp = self.delete_note(Id, notebook_id) 
             print(resp)
-        self._delete_notebook(notebook_id) 
-        return
+        resp = self._delete_notebook(notebook_id) 
+        return resp
 
     def _delete_notebook(self, notebookID):
+        print(notebookID)
         query = {"_id": ObjectId(notebookID)}
         resp = self.notebooks_coll.delete_one(query)
          

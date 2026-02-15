@@ -73,3 +73,8 @@ class Authentication:
         userdata = self.database_connector.find_user(username)
         return userdata
 
+    def delete_notebook_from_user(self, username, notebookid):
+        filter_condition = {"username": username}
+        operation = { "$pull": { "notebook_ids": notebookid} }
+        resp = self.database_connector.update_collection(filter_condition, operation)
+        return resp

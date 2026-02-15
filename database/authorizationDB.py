@@ -58,5 +58,10 @@ class mongo_db_auth_connector:
                 }
             }
             )
-        return True 
+        return True
 
+    def update_collection(self, filter_criteria, update_oper):
+        resp = self.collection.update_one(filter_criteria, update_oper)
+        return resp
+
+    

@@ -13,6 +13,13 @@ redis_dbconnector = redis_connector()
 auth_obj = Authentication(auth_dbconnector, redis_dbconnector)
 mongo_db_conn = mongo_db_connector()
 
+class Note_object(BaseModel):
+    note_contents: dict
+    note_id: str
+
+class NoteDataFromUser(BaseModel):
+    note_id: str
+
 class Notebook(BaseModel):
     notebookname: str
 
@@ -21,6 +28,10 @@ class Note(BaseModel):
     notename: str
     data: str
 class NotebookData(BaseModel):
+    notebook_id: str
+
+class NoteID(BaseModel):
+    note_id: str
     notebook_id: str
 
 @router.get("/getnotebooks")
@@ -76,28 +87,17 @@ async def get_notes(notebook_data: NotebookData, user=Depends(auth_obj.validate_
     return notebook_data["notes"]
 
 
-#receive notebook id
-#create note, store note id in notebook's data
-#store note data i.e note name, note id, data and notebook id in notes collection in mongo db
-class NoteDataFromUser(BaseModel):
-    note_id: str
 @router.post("/getnotefromid")
 async def get_note_frm_id(NoteData: NoteDataFromUser, user=Depends(auth_obj.validate_session) ):
    note =  mongo_db_conn.get_note_from_id(NoteData.note_id)
    return note 
-
-class Note_object(BaseModel):
-    note_contents: dict
-    note_id: str
 
 @router.put("/replacenote")
 async def Replace_Note(nt_obj: Note_object, user=Depends(auth_obj.validate_session)):
     status = mongo_db_conn.replace_note_by_id(nt_obj.note_id, nt_obj.note_contents)
     return status
 
-class NoteID(BaseModel):
-    note_id: str
-    notebook_id: str
+
 
 @router.post("/deletenote")
 async def Delete_note(note_id_object: NoteID, user=Depends(auth_obj.validate_session)):
@@ -106,4 +106,7 @@ async def Delete_note(note_id_object: NoteID, user=Depends(auth_obj.validate_ses
 
 @router.post("/deletenotebook")
 async def Delete_notebook(Notebook_data: NotebookData, user=Depends(auth_obj.validate_session)):
-    return
+    notebook_id = Notebook_data.notebook_id
+    resp = mongo_db_conn.delete_notebook_and_notes(notebook_id)
+    resp2 = auth_obj.delete_notebook_from_user(user["username"], notebook_id)
+    return ""
