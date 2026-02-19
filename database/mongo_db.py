@@ -66,13 +66,13 @@ class mongo_db_connector:
             return False
         return True
 
-    def store_noteid_in_notebook(self, note_id, notebook_id):
+    def store_noteid_in_notebook(self, note_id, notebook_id ):
         updated_object = self.notebooks_coll.update_one({
             "_id": ObjectId(notebook_id)
             },
              {
                 "$addToSet":{
-                     "notes": note_id
+                    "notes": note_id 
                     }
                  }
             )
@@ -83,6 +83,18 @@ class mongo_db_connector:
     #working but need to add some error handling plus next
     # i need to create get nodes and update notes
 
+
+    #returning note but next need to integrate it with frontend
+
+    def get_notes_with_names(self, note_ids):
+        # Fetch full note documents with names for display in frontend
+        notes = []
+        for note_id in note_ids:
+            note = self.get_note_from_id(note_id)
+            if note:
+                notes.append({"_id": note["_id"], "notename": note["notename"]})
+        return notes
+
     def get_note_from_id(self, noteid):
         objectid = ObjectId(noteid)
         note  = self.notes_coll.find_one({"_id":objectid })
@@ -90,8 +102,6 @@ class mongo_db_connector:
             raise HTTPException(status = 400, detail="failed to create note")
         note["_id"] = str(note["_id"])
         return note
-
-    #returning note but next need to integrate it with frontend
 
     def replace_note_by_id(self, noteid, note_contents):
         objectid = ObjectId(noteid)

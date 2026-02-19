@@ -84,7 +84,10 @@ async def get_notes(notebook_data: NotebookData, user=Depends(auth_obj.validate_
     if not notebook_data:
         raise HTTPException(status_code=404, detail="failed to fetch notes")
 
-    return notebook_data["notes"]
+    # Fetch full note documents with names instead of just IDs
+    note_ids = notebook_data["notes"]
+    notes_with_names = mongo_db_conn.get_notes_with_names(note_ids)
+    return notes_with_names
 
 
 @router.post("/getnotefromid")
@@ -110,3 +113,5 @@ async def Delete_notebook(Notebook_data: NotebookData, user=Depends(auth_obj.val
     resp = mongo_db_conn.delete_notebook_and_notes(notebook_id)
     resp2 = auth_obj.delete_notebook_from_user(user["username"], notebook_id)
     return ""
+
+#added notename in delete
