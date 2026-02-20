@@ -1,4 +1,5 @@
 import os
+from fastapi import HTTPException
 from pymongo.server_api import ServerApi
 from pymongo.mongo_client import MongoClient
 class mongo_db_auth_connector:
@@ -26,9 +27,10 @@ class mongo_db_auth_connector:
         }
         searching_user = self.find_user(username)
         if searching_user:
-            return {
-                    "Exception" : "user exists" 
-            }
+            #return {
+            #        "Exception" : "user exists" 
+            #}
+            raise HTTPException(status_code=401, detail="User already exists")
         try: 
             self.collection.insert_one(user)
             return {
