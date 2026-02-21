@@ -13,22 +13,21 @@ redis_dbconnector = redis_connector()
 auth_obj = Authentication(auth_dbconnector, redis_dbconnector)
 mongo_db_conn = mongo_db_connector()
 
-class Note_object(BaseModel):
-    note_contents: dict
-    note_id: str
-
 class NoteDataFromUser(BaseModel):
     note_id: str
+
+class Note_object(NoteDataFromUser):
+    note_contents: dict
 
 class Notebook(BaseModel):
     notebookname: str
 
-class Note(BaseModel):
-    notebook_id: str
-    notename: str
-    data: str
 class NotebookData(BaseModel):
     notebook_id: str
+
+class Note(NotebookData):
+    notename: str
+    data: str
 
 class NoteID(BaseModel):
     note_id: str

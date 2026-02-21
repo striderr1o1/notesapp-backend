@@ -1,4 +1,7 @@
 test.py
 .env
 notes.txt
+__pycache__/
+*.swp
+*.pyc
 
