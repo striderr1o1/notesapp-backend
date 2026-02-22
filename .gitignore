@@ -4,4 +4,5 @@ notes.txt
 __pycache__/
 *.swp
 *.pyc
+myenv/
 
