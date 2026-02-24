@@ -112,5 +112,10 @@ async def Delete_notebook(Notebook_data: NotebookData, user=Depends(auth_obj.val
     resp = mongo_db_conn.delete_notebook_and_notes(notebook_id)
     resp2 = auth_obj.delete_notebook_from_user(user["username"], notebook_id)
     return ""
-
+@router.get("/check_session")
+async def Check_Auth(user=Depends(auth_obj.validate_session)):
+    if user == False:
+        raise HTTPException(status_code=401, detail="not authenticated")
+        return False
+    return True
 #added notename in delete

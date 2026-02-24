@@ -42,9 +42,11 @@ class Authentication:
         print(request)
         if not session_id:
             raise HTTPException(status_code = 401, detail = "Not authenticated, no session id included")
+            return False
         username_from_session = self.redis_connector.get_user_from_id(session_id)
         if not username_from_session:
             raise HTTPException(status_code = 401, detail = "Not authenticated, user not found in sessions db")
+            return False
         
         userdata = self.database_connector.find_user(username_from_session)
         if not userdata:
