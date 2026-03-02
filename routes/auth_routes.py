@@ -40,8 +40,8 @@ async def Login(data: LoginData, response: Response):
         key="session_id",
         value=session_id,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=False,
+        samesite="lax",
         path="/"
     )
     return {"status": "successful"}
