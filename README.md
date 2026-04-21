@@ -162,9 +162,3 @@ The API will be available at `http://127.0.0.1:8000`. Interactive docs are serve
 7. **No input sanitization or length limits** — Pydantic models validate types but don't enforce length constraints on usernames, passwords, notebook names, or note content.
 
 8. **`datetime.utcnow()` is deprecated** — In `mongo_db.py`, `datetime.utcnow()` is used for `created_at` timestamps. This has been deprecated since Python 3.12 in favor of `datetime.now(datetime.UTC)`.
-
-## Planned Features
-
-- RAG-based search service
-- AI-powered PDF processing with MCQ/exam question generation
-- Scalability improvements
