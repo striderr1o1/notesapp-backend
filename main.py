@@ -7,7 +7,7 @@ load_dotenv()
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://192.168.0.106:8080"],  # React frontend
+    allow_origins=["http://192.168.0.106:8080", "http://localhost:5173"],  # React frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
